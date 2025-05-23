@@ -274,6 +274,57 @@ ssh -vT git@github.com
 ssh -T -p 443 git@ssh.github.com
 ```
 
+### "Permission denied (publickey)" Error
+
+**Symptoms:**
+
+```bash
+git push origin master
+git@ssh.github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+```
+
+**Common Cause:** SSH config missing `IdentityFile` directive for GitHub.
+
+**Solution:**
+
+1. **Check your SSH config:**
+
+```bash
+cat ~/.ssh/config
+```
+
+2. **If GitHub entry is missing `IdentityFile`, add it:**
+
+```bash
+echo "    IdentityFile ~/.ssh/id_ed25519_github" >> ~/.ssh/config
+```
+
+3. **Your GitHub config should look like this:**
+
+```bash
+Host github.com
+    Hostname ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+```
+
+4. **Test the connection:**
+
+```bash
+ssh -T git@github.com
+# Should show: "Hi username! You've successfully authenticated"
+```
+
+5. **Try pushing again:**
+
+```bash
+git push origin master
+```
+
+**Why This Happens:** SSH doesn't know which key to use for authentication unless explicitly specified in the config file.
+
 ---
 
 ## 📝 Best Practices for Infrastructure Projects
