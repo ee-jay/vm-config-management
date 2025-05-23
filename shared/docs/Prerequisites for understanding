@@ -1,0 +1,387 @@
+# Prerequisites for Understanding Nginx Configuration
+
+## 1. Web Fundamentals
+- HTTP/HTTPS protocols
+  - Request/Response cycle
+  - HTTP methods (GET, POST, etc.)
+  - Headers and their purposes
+  - Status codes
+- Client-server architecture
+  - How browsers interact with servers
+  - Request flow
+  - Response handling
+- URL structure
+  - Components of a URL
+  - Path resolution
+  - Query parameters
+- HTTP methods and status codes
+  - Common methods (GET, POST, PUT, DELETE)
+  - Status code categories (2xx, 3xx, 4xx, 5xx)
+  - Error handling
+
+## 2. Networking Basics
+- TCP/IP
+  - IP addressing
+  - Port numbers
+  - Protocol layers
+- Ports
+  - Common port numbers (80, 443, etc.)
+  - Port forwarding
+  - Port security
+- DNS
+  - Domain name resolution
+  - DNS records
+  - DNS caching
+- IP addressing
+  - IPv4 and IPv6
+  - Subnetting
+  - Network masks
+
+## 3. Web Server Concepts
+- Static vs. dynamic content
+  - File serving
+  - Dynamic content generation
+  - Caching strategies
+- Reverse proxy
+  - Forward vs. reverse proxying
+  - Load balancing
+  - SSL termination
+- Virtual hosts
+  - Multiple domains
+  - Server blocks
+  - Name-based hosting
+
+## 4. Container Technologies
+- Docker basics
+  - Containers vs. VMs
+  - Docker images
+  - Container lifecycle
+- Container networking
+  - Network modes
+  - Port mapping
+  - Container communication
+- Service discovery
+  - DNS resolution
+  - Service registration
+  - Load balancing
+
+### Docker Service Names vs Container Names
+
+#### Service Names
+- Defined in docker-compose.yml under the `services` section
+- Used for service discovery within Docker networks
+- Example:
+  ```yaml
+  services:
+    node_app:    # This is the service name
+      build: ./app
+  ```
+- Characteristics:
+  - Used for inter-container communication
+  - Resolved by Docker's internal DNS
+  - Stable across container restarts
+  - Can be used as hostnames in other containers
+  - Follows Docker Compose conventions
+  - Can be referenced in nginx.conf and other configs
+
+#### Container Names
+- Defined using `container_name` in docker-compose.yml
+- Used for human-readable identification
+- Example:
+  ```yaml
+  services:
+    node_app:
+      container_name: po_server    # This is the container name
+  ```
+- Characteristics:
+  - Must be unique across all containers
+  - Used for debugging and logging
+  - Not used for service discovery
+  - Can be referenced in Docker commands
+  - More for human readability
+  - Optional (Docker generates random names if not specified)
+
+#### Key Differences
+1. Purpose
+   - Service names: For service discovery and networking
+   - Container names: For human identification and debugging
+
+2. Usage
+   - Service names: Used in configuration files and inter-container communication
+   - Container names: Used in Docker commands and logs
+
+3. Stability
+   - Service names: Stable across restarts and recreations
+   - Container names: Can change if container is recreated
+
+4. Uniqueness
+   - Service names: Can be repeated across different docker-compose projects
+   - Container names: Must be unique across all Docker containers
+
+5. DNS Resolution
+   - Service names: Automatically resolved within Docker networks
+   - Container names: Not used for DNS resolution
+
+#### Best Practices
+1. Always use service names for:
+   - Inter-container communication
+   - Configuration files
+   - Service discovery
+   - Network references
+
+2. Use container names for:
+   - Debugging
+   - Log identification
+   - Docker commands
+   - Human readability
+
+3. Naming Conventions
+   - Service names: lowercase with underscores (e.g., `node_app`)
+   - Container names: descriptive and project-specific (e.g., `po_server`)
+
+## 5. Related Technologies
+- Node.js
+  - Event-driven architecture
+  - Non-blocking I/O
+  - Package management
+- PostgreSQL
+  - Database concepts
+  - SQL basics
+  - Connection pooling
+- WebSocket protocol
+  - Real-time communication
+  - Connection handling
+  - Protocol upgrade
+
+## 6. Security Concepts
+- SSL/TLS
+  - Encryption
+  - Certificate management
+  - Security protocols
+- HTTP headers
+  - Security headers
+  - CORS
+  - Content Security Policy
+- Proxy security
+  - Authentication
+  - Authorization
+  - Access control
+
+## 7. System Administration
+- Linux basics
+  - File system
+  - Process management
+  - User permissions
+- File permissions
+  - Read/Write/Execute
+  - User/Group/Others
+  - Special permissions
+- Process management
+  - Process states
+  - Resource monitoring
+  - Service management
+
+## Learning Resources
+1. Official Documentation
+   - Nginx documentation
+   - Docker documentation
+   - Node.js documentation
+   - PostgreSQL documentation
+
+2. Online Courses
+   - Coursera
+   - Udemy
+   - freeCodeCamp
+   - Linux Academy
+
+3. Books
+   - "Nginx HTTP Server" by Martin Fjordvald
+   - "Docker in Action" by Jeff Nickoloff
+   - "Node.js in Action" by Alex Young
+
+4. Practice Labs
+   - Docker playground
+   - Nginx test environments
+   - Local development setups
+
+## HTTP and HTTPS in Nginx
+
+### HTTP (Port 80)
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+}
+```
+- Default port for HTTP traffic
+- Unencrypted communication
+- Current configuration uses HTTP (port 80)
+- Suitable for development or internal networks
+- Not recommended for production use with sensitive data
+
+### HTTPS (Port 443)
+```nginx
+server {
+    listen 443 ssl;
+    server_name example.com;
+    
+    ssl_certificate     /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+    
+    # Recommended SSL settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+    
+    # HSTS (optional)
+    add_header Strict-Transport-Security "max-age=63072000" always;
+}
+```
+- Encrypted communication using SSL/TLS
+- Requires SSL certificate and private key
+- Recommended for all production environments
+- Protects data in transit
+- Can be obtained from:
+  - Let's Encrypt (free)
+  - Commercial Certificate Authorities
+  - Self-signed (development only)
+
+### HTTP to HTTPS Redirect
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$server_name$request_uri;
+}
+```
+- Redirects all HTTP traffic to HTTPS
+- Best practice for production
+- Ensures all traffic is encrypted
+- Uses 301 (permanent) redirect
+
+### SSL Session Handling
+```nginx
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:50m;
+ssl_session_tickets off;
+```
+- Improves performance for returning visitors
+- Reduces SSL handshake overhead
+- Configures session cache and timeout
+
+### Common SSL Issues
+1. Mixed Content
+   - HTTP resources loaded on HTTPS pages
+   - Fix: Ensure all resources use HTTPS
+2. Certificate Expiration
+   - SSL certificates have limited validity
+   - Set up automatic renewal (especially with Let's Encrypt)
+3. Weak Ciphers
+   - Outdated SSL/TLS protocols
+   - Use modern cipher suites
+4. Missing Chain Certificates
+   - Incomplete certificate chain
+   - Include full chain in certificate file
+
+### Best Practices
+1. Always use HTTPS in production
+2. Keep SSL certificates up to date
+3. Use strong cipher suites
+4. Enable HSTS for additional security
+5. Regular security audits
+6. Monitor certificate expiration
+7. Use automated certificate renewal
+8. Implement proper error handling
+
+## HTTP Status Codes
+
+### Common Status Code Categories
+- 1xx: Informational responses
+- 2xx: Success responses
+- 3xx: Redirection responses
+- 4xx: Client error responses
+- 5xx: Server error responses
+
+### Frequently Used Status Codes
+
+#### 2xx Success
+- `200 OK`: Request succeeded
+- `201 Created`: Resource successfully created
+- `204 No Content`: Request succeeded but no content to return
+
+#### 3xx Redirection
+- `301 Moved Permanently`: Resource permanently moved to new URL
+  ```nginx
+  return 301 https://$server_name$request_uri;  # HTTP to HTTPS redirect
+  ```
+- `302 Found`: Resource temporarily moved to new URL
+  ```nginx
+  return 302 /po/;  # Temporary redirect to /po/
+  ```
+- `304 Not Modified`: Resource not modified since last request
+
+#### 4xx Client Errors
+- `400 Bad Request`: Malformed request syntax
+- `401 Unauthorized`: Authentication required
+- `403 Forbidden`: Server understood request but refuses to authorize
+- `404 Not Found`: Resource not found
+  ```nginx
+  error_page 404 /404.html;  # Custom 404 page
+  ```
+- `405 Method Not Allowed`: HTTP method not allowed for this resource
+
+#### 5xx Server Errors
+- `500 Internal Server Error`: Generic server error
+- `502 Bad Gateway`: Invalid response from upstream server
+  ```nginx
+  error_page 502 /502.html;  # Custom 502 page
+  ```
+- `503 Service Unavailable`: Server temporarily unable to handle request
+- `504 Gateway Timeout`: Upstream server timed out
+
+### Custom Error Pages in Nginx
+```nginx
+# Define custom error pages
+error_page 404 /404.html;
+error_page 500 502 503 504 /50x.html;
+
+# Location block for error pages
+location = /404.html {
+    root /usr/share/nginx/html;
+    internal;  # Only accessible internally
+}
+```
+
+### Status Code Usage in Nginx
+1. Redirects
+   ```nginx
+   # Permanent redirect (301)
+   return 301 https://$server_name$request_uri;
+   
+   # Temporary redirect (302)
+   return 302 /new-location/;
+   ```
+
+2. Access Control
+   ```nginx
+   # Return 403 Forbidden
+   location /private/ {
+       deny all;
+       return 403;
+   }
+   ```
+
+3. Proxy Errors
+   ```nginx
+   # Handle upstream errors
+   proxy_intercept_errors on;
+   error_page 502 503 504 /50x.html;
+   ```
+
+### Best Practices
+1. Use appropriate status codes for each situation
+2. Provide custom error pages for common errors
+3. Log status codes for monitoring and debugging
+4. Handle both client and server errors gracefully
+5. Use 301 for permanent redirects, 302 for temporary
+6. Implement proper error handling in proxy configurations 

@@ -1,0 +1,135 @@
+# Nginx Configuration Explained
+
+## Global Configuration
+```nginx
+worker_processes 1;
+```
+- Controls the number of worker processes Nginx will spawn
+- Set to 1 in this configuration
+- In production, often set to match the number of CPU cores
+
+## Events Block
+```nginx
+events {
+    worker_connections 1024;
+}
+```
+- Configures how Nginx handles connections
+- `worker_connections 1024` sets maximum simultaneous connections per worker
+- Critical for handling concurrent traffic
+
+## HTTP Block
+```nginx
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+}
+```
+- Main configuration block for HTTP traffic
+- Includes standard MIME type definitions
+- Sets default MIME type for unrecognized file types
+
+## Server Block
+```nginx
+server {
+    listen 80;
+    server_name webby;
+}
+```
+- Defines a virtual host/server
+- Listens on port 80 (standard HTTP)
+- `server_name` should typically match your domain name, not the VM hostname
+  - Better practice: Use `localhost` for development or your actual domain for production
+  - Current setting (`webby`) is not ideal as it's tied to VM hostname
+
+## Location Blocks
+
+### Root Redirect
+```nginx
+location = / {
+    return 302 /po/;
+}
+```
+- Exact match (`=`) for root path "/"
+- Performs 302 (temporary) redirect to "/po/"
+- Ensures users accessing root are directed to the main application
+
+### POServer Static Website
+```nginx
+location /po/ {
+    rewrite ^/po(/.*)$ $1 break;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+}
+```
+Rewrite Rule Breakdown:
+- `^` - Start of string anchor
+- `/po` - Literal match for "/po"
+- `(/.*)` - Capture group for everything after /po/
+  - `.` matches any character
+  - `*` means "zero or more"
+- `$` - End of string anchor
+- `$1` - References the captured group
+- `break` - Stops processing further rewrite rules
+
+Example Flow:
+1. User requests: /po/about.html
+2. Rewrite converts to: /about.html
+3. Final file path: /usr/share/nginx/html/about.html
+
+### API Proxy
+```nginx
+location /api/ {
+    proxy_pass http://node_app:3000/;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+}
+```
+- Proxies requests to Node.js application
+- Built-in Variables Used:
+  - `$host`: Contains request's Host header or server_name
+  - `$http_upgrade`: Used for WebSocket support
+- Sets up WebSocket support
+- Preserves original host information
+
+#### Docker Service Resolution
+- `node_app:3000` refers to the service name in docker-compose.yml, not the container name
+- Example from docker-compose.yml:
+  ```yaml
+  services:
+    node_app:    # Service name used in proxy_pass
+      container_name: po_server  # Container name (not used in proxy_pass)
+      ports:
+        - '3000:3000'
+      networks:
+        - nginx_network
+  ```
+- Docker's internal DNS resolves service names within the same network
+- Both containers must be on the same Docker network (e.g., `nginx_network`)
+- Service names are preferred over container names for:
+  - Stability across container restarts
+  - Following Docker Compose conventions
+  - Consistent service discovery
+- Container names are more for human readability and debugging
+
+### PgAdmin Configuration
+```nginx
+location /pgadmin/ {
+    proxy_pass http://pgadmin:80/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Script-Name /pgadmin;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+- Proxies requests to PgAdmin instance
+- Sets various proxy headers:
+  - `Host`: Original host header
+  - `X-Script-Name`: Base path for PgAdmin
+  - `X-Real-IP`: Client's IP
+  - `X-Forwarded-For`: IP chain
+  - `X-Forwarded-Proto`: Original protocol

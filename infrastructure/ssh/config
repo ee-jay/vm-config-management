@@ -1,0 +1,20 @@
+Host fedora
+    HostName 192.168.1.113
+    User trav
+    IdentityFile C:/Users/ESTL-BO-2/.ssh/id_rsa
+Host docker
+    HostName 192.168.20.4
+    User trav
+    IdentityFile C:/Users/ESTL-BO-2/.ssh/id_rsa
+Host webby
+    HostName 192.168.20.5
+    User trav
+    IdentityFile C:/Users/ESTL-BO-2/.ssh/id_rsa
+Host foundry
+    HostName 149.28.126.9
+    User trav
+Host pve
+    HostName 192.168.20.2
+    User trav
+    IdentityFile C:/Users/ESTL-BO-2/.ssh/id_rsa
+    

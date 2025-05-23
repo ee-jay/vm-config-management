@@ -1,0 +1,50 @@
+function new_archive() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  var sheetdate = sheet.getRange('A1').getValue();
+  var period;
+  var url = ss.getUrl();
+
+  if (sheetdate instanceof Date) {
+    period = Utilities.formatDate(sheetdate, 'GMT+5', 'yyyy.MM.dd');
+  } else {
+    period = sheetdate.toString();
+  }
+  url = url.replace(/edit$/, '');
+
+  var url_ext =
+    'export?exportFormat=pdf&format=pdf' +
+    '&range=A1:AU263' +
+    '&size=1' +
+    '&portrait=false' +
+    '&fitw=true' +
+    '&sheetnames=false&printtitle=false&pagenumbers=false' +
+    '&gridlines=false' +
+    '&fzr=false' +
+    '&gid=' +
+    sheet.getSheetId();
+
+  var token = ScriptApp.getOAuthToken();
+
+  var response = UrlFetchApp.fetch(url + url_ext, {
+    headers: {
+      Authorization: 'Bearer ' + token,
+    },
+  });
+
+  var blob = response.getBlob().setName(ss.getName() + ' - ' + period + '.pdf');
+
+  // --- Send the PDF to your Flask server ---
+  var serverUrl = 'http://YOUR_SERVER_IP:5000/upload'; // Change to your server's IP/hostname and port
+
+  var options = {
+    method: 'post',
+    payload: {
+      file: blob,
+    },
+    muteHttpExceptions: true,
+  };
+
+  var serverResponse = UrlFetchApp.fetch(serverUrl, options);
+  Logger.log(serverResponse.getContentText());
+}

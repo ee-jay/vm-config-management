@@ -1,0 +1,52 @@
+services:
+  # Homepage Dashboard
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    ports:
+      - 3000:3000
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
+    volumes:
+      - /opt/docker/homepage:/app/config
+      - /opt/docker/homepage:/app/public/images
+    restart: unless-stopped
+
+  # WikiJS Services
+  wiki-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${WIKI_DB_NAME}
+      POSTGRES_PASSWORD: ${WIKI_DB_PASSWORD}
+      POSTGRES_USER: ${WIKI_DB_USER}
+    logging:
+      driver: 'none'
+    restart: unless-stopped
+    volumes:
+      - /opt/wikijs/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${WIKI_DB_USER} -d ${WIKI_DB_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  wiki:
+    image: ghcr.io/requarks/wiki:2
+    depends_on:
+      - wiki-db
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: wiki-db
+      DB_PORT: 5432
+      DB_USER: ${WIKI_DB_USER}
+      DB_PASS: ${WIKI_DB_PASSWORD}
+      DB_NAME: ${WIKI_DB_NAME}
+    restart: unless-stopped
+    ports:
+      - '3002:3000'
+
+volumes:
+  paperless-data:
+  paperless-media:
+  paperless-db:
+  paperless-redis:

@@ -1,0 +1,33 @@
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/info-widgets/
+
+#- resources:
+#   cpu: true
+#    memory: true
+#    disk: /
+- datetime:
+    text_size: x1
+    format:
+      dateStyle: long
+      timeStyle: short
+      hour12: false
+
+- search:
+    provider: google
+    target: _blank
+
+- openmeteo:
+    label: # optional
+    latitude: 38.622929
+    longitude: -90.154938
+    timezone: America/Chicago # optional
+    units: imperial
+    cache: 5 # Time in minutes to cache API responses, to stay within limits
+    format: # optional, Intl.NumberFormat options
+      maximumFractionDigits: 1
+
+- proxmox:
+    url: http://192.168.20.2:8006
+    username: trav@pam!homepage
+    password: 4148917f-d328-4782-bd55-f4d4da6bfee2
+    node: pve

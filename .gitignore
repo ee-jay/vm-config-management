@@ -1,0 +1,210 @@
+# Multi-VM Configuration Management .gitignore
+
+## Sensitive Data & Secrets
+*.env
+.env
+.env.*
+**/secrets/
+**/secret/
+**/.secrets/
+**/keys/
+**/private/
+**/.private/
+
+## Environment Variables
+**/.env.local
+**/.env.production
+**/.env.development
+**/.env.test
+
+## Database Files & Backups
+*.sql
+*.dump
+*.backup
+*.sqlite
+*.sqlite3
+*.db
+**/dumps/
+**/backups/
+**/db-backups/
+**/*backup*/
+**/*_backup_*/
+**/wikiDB/
+**/*.tar.gz
+
+## Storage & Data Directories
+# External storage symlinks/mounts
+paperless_storage_ssd/
+*_storage_*/
+**/storage_*/
+**/data/
+**/media/
+**/uploads/
+**/consume/
+**/export/
+**/import/
+
+# Database volumes
+**/db/
+**/database/
+**/postgres_data/
+**/mysql_data/
+**/redis_data/
+
+## Log Files
+logs/
+*.log
+**/logs/
+**/*.log
+**/log/
+**/*.out
+**/*.err
+
+## Temporary & Cache Files
+tmp/
+temp/
+**/tmp/
+**/temp/
+**/cache/
+**/.cache/
+**/.tmp/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+## Backup Archives
+*.tar
+*.tar.gz
+*.tar.bz2
+*.zip
+*.rar
+*.7z
+**/backup/
+**/.tar/
+**/archives/
+
+## Docker & Container Data
+**/volumes/
+**/docker-volumes/
+**/container-data/
+**/.docker/
+**/docker/data/
+**/docker/volumes/
+
+## VM-Specific Exclusions
+# Webby VM - exclude user data but keep configs
+webby/data/
+webby/uploads/
+webby/logs/
+webby/*.sqlite*
+
+# Docker VM - exclude generated/runtime data
+docker\ vm/logs/
+docker\ vm/backup/
+docker\ vm/.tar/
+docker\ vm/paperless_storage_ssd/
+
+# Doc VM - exclude paperless data
+paperless/data/
+paperless/media/
+paperless/consume/
+paperless/export/
+
+## SSH & Security
+**/.ssh/id_*
+**/.ssh/*_rsa
+**/.ssh/*_ed25519
+**/authorized_keys
+**/known_hosts*
+
+## OS & System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+*.swp
+*.swo
+.*.swp
+.*.swo
+
+## Editor & IDE Files
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+.vim/
+.nvim/
+
+## Version Control
+.svn/
+.hg/
+.bzr/
+
+## Large Binary Files
+*.iso
+*.img
+*.vmdk
+*.vdi
+*.qcow2
+*.ova
+*.ovf
+
+## Certificates & Keys
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*.jks
+
+## Runtime & Process Files
+*.pid
+*.lock
+*.socket
+
+## Documentation Build Artifacts
+docs/_build/
+docs/build/
+site/
+_site/
+
+## Custom Exclusions
+# Add project-specific exclusions below:
+
+# Proxmox/VM snapshots if stored locally
+**/*.qcow2.backup
+**/*.vma
+**/*.lzo
+
+# Configuration file backups (keep only current)
+**/*.bak
+**/*.backup
+**/*.orig
+**/*.old
+
+## Include Important Files (override exclusions)
+# Force include critical config templates
+!**/docker-compose.yml.template
+!**/example.env
+!**/.env.example
+!**/sample.env
+
+# Include documentation
+!**/README.md
+!**/CHANGELOG.md
+!**/LICENSE
+!**/docs/
+
+# Include automation scripts
+!**/scripts/
+!**/automation/
+!**/*.sh
+!**/*.py
+!**/*.yml
+!**/*.yaml 
