@@ -207,4 +207,4 @@ _site/
 !**/*.sh
 !**/*.py
 !**/*.yml
-!**/*.yaml 
+!**/*.yaml private-backups/
