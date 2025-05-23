@@ -294,13 +294,67 @@ git commit -m "Initial commit after file organization"
 
 ---
 
-## Phase 4: VM Deployment Scripts
+## Phase 4: GitHub Repository Setup
 
-**Goal:** Create deployment scripts to push configurations from this repo to actual VMs
+**Goal:** Configure SSH access to GitHub and create remote repository
+
+### SSH Key & Authentication Setup
+
+```bash
+# Generate SSH key for GitHub
+ssh-keygen -t ed25519 -C "estl-bo-2 fedora wsl machine" -f ~/.ssh/id_ed25519_github
+
+# Start SSH agent and add key
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519_github
+
+# Display public key for GitHub
+cat ~/.ssh/id_ed25519_github.pub
+```
+
+**Public Key Generated:**
+
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdbMcauYwU0OOeZZvxNoWfx0vfKXNIAQxR5wol1gZ+P estl-bo-2 fedora wsl machine
+```
+
+### Corporate Firewall Workaround
+
+**Issue:** Corporate firewall blocking SSH port 22 to GitHub  
+**Solution:** Configure SSH over HTTPS (port 443)
+
+```bash
+# Add GitHub SSH-over-HTTPS config to ~/.ssh/config
+echo "
+Host github.com
+    Hostname ssh.github.com
+    Port 443
+    User git
+" >> ~/.ssh/config
+
+# Test connection (successful!)
+ssh -T git@github.com
+# Result: "Hi ee-jay! You've successfully authenticated"
+```
+
+**Status:** ✅ **COMPLETED** - SSH authentication to GitHub working via port 443
+
+### Key Lessons:
+
+- **Port 22 blocked** by corporate firewall (connection timeout)
+- **Port 443 works** - GitHub provides SSH over HTTPS for corporate environments
+- **SSH config modification** essential for corporate network access
+- **Authentication successful** - ready for git push operations
+
+---
+
+## Phase 5: Remote Repository Creation
+
+**Goal:** Create remote repository on GitHub and push organized structure
 
 ### Next Steps:
 
-1. **Create deployment script for docker VM** - Sync configs to 192.168.20.4
-2. **Create deployment script for doc VM** - Sync configs to 192.168.20.6
+1. **Create remote repository** on GitHub
+2. **Push organized structure** to remote repository
 3. **Test deployment workflow** on non-critical services
 4. **Document rollback procedures**
