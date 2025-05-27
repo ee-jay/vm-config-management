@@ -1,0 +1,11 @@
+Quickbooks Desktop Enterprise Edition
+    - We do NOT have advanced inventory
+    - we do NOT have Payroll, 
+    - We are using the Manufacturing and Wholesale variant
+API Reference:
+https://developer.intuit.com/app/developer/qbdesktop/docs/api-reference/qbdesktop
+
+# Project Rules
+1.  Disregard anything dealing with Quickbooks Online
+2. Primary reference materials are in ./reference directory, the subdirectory of this one.
+3. 
