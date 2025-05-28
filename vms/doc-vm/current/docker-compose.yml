@@ -1,0 +1,60 @@
+services:
+  paperless-redis:
+    image: docker.io/library/redis:7
+    restart: unless-stopped
+    volumes:
+      - paperless-redis:/data
+
+  paperless-db:
+    image: docker.io/library/postgres:17
+    restart: unless-stopped
+    volumes:
+      - paperless-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${PAPERLESS_DB_NAME}
+      POSTGRES_USER: ${PAPERLESS_DB_USER}
+      POSTGRES_PASSWORD: ${PAPERLESS_DB_PASSWORD}
+    env_file:
+      - paperless.env
+
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-db
+      - paperless-redis
+      - paperless-gotenberg
+      - paperless-tika
+    ports:
+      - '8000:8000'
+    volumes:
+      - paperless-data:/usr/src/paperless/data
+      - paperless-media:/usr/src/paperless/media
+      - /mnt/paperless_storage_ssd/export:/usr/src/paperless/export
+      - /mnt/paperless_storage_ssd/consume:/usr/src/paperless/consume
+    env_file:
+      - paperless.env
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:9998
+
+  paperless-gotenberg:
+    image: docker.io/gotenberg/gotenberg:8.19
+    restart: unless-stopped
+    command:
+      - 'gotenberg'
+      - '--chromium-disable-javascript=true'
+      - '--chromium-allow-list=file:///tmp/.*'
+
+  paperless-tika:
+    image: docker.io/apache/tika:latest
+    restart: unless-stopped
+
+volumes:
+  paperless-data:
+  paperless-media:
+  paperless-db:
+  paperless-redis:
